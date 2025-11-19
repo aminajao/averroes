@@ -3,7 +3,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { initializeStorage } from '@/lib/localStorage';
 
 const theme = createTheme({
   palette: {
@@ -91,6 +92,10 @@ export default function Providers({ children }) {
       },
     },
   }));
+
+  useEffect(() => {
+    initializeStorage();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
