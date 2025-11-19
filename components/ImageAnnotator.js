@@ -34,6 +34,10 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const stageRef = useRef(null);
 
+  useEffect(() => {
+    setRectangles(annotations);
+  }, [annotations]);
+
   const handleImageLoad = (image) => {
     const maxWidth = window.innerWidth > 1200 ? 1000 : 800;
     const maxHeight = 600;
