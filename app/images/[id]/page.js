@@ -54,35 +54,53 @@ export default function ImageDetailPage() {
     });
   };
 
-  const handleSaveAnnotations = (newAnnotations) => {
-    newAnnotations.forEach((annotation) => {
-      if (!annotation.savedToAPI) {
-        createAnnotationMutation.mutate(
-          {
-            imageId: parseInt(imageId),
-            ...annotation,
-          },
-          {
-            onSuccess: () => {
-              setSnackbar({
-                open: true,
-                message: 'Annotations saved successfully',
-                severity: 'success',
-              });
-            },
-            onError: () => {
-              setSnackbar({
-                open: true,
-                message: 'Note: API is read-only. Annotations are stored locally.',
-                severity: 'info',
-              });
-            },
-          }
-        );
-      }
-    });
+  const handleSaveAnnotations = async (newAnnotations) => {
+    const existingIds = annotations.map(a => a.id);
+    const annotationsToSave = newAnnotations.filter(a => !existingIds.includes(a.id));
 
-    setLocalAnnotations(newAnnotations.map((a) => ({ ...a, savedToAPI: true })));
+    if (annotationsToSave.length === 0) {
+      setSnackbar({
+        open: true,
+        message: 'No new annotations to save',
+        severity: 'info',
+      });
+      return;
+    }
+
+    let savedCount = 0;
+    let errorCount = 0;
+
+    for (const annotation of annotationsToSave) {
+      try {
+        await createAnnotationMutation.mutateAsync({
+          imageId: imageId,
+          x: annotation.x,
+          y: annotation.y,
+          width: annotation.width,
+          height: annotation.height,
+          color: annotation.color,
+          label: annotation.label || '',
+        });
+        savedCount++;
+      } catch (error) {
+        console.error('Error saving annotation:', error);
+        errorCount++;
+      }
+    }
+
+    if (savedCount > 0) {
+      setSnackbar({
+        open: true,
+        message: `Successfully saved ${savedCount} annotation${savedCount !== 1 ? 's' : ''}`,
+        severity: 'success',
+      });
+    } else if (errorCount > 0) {
+      setSnackbar({
+        open: true,
+        message: 'Failed to save annotations',
+        severity: 'error',
+      });
+    }
   };
 
   if (imageLoading) {

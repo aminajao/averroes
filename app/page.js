@@ -67,8 +67,8 @@ export default function Home() {
         setUploadDialogOpen(false);
         showSnackbar('Image uploaded successfully', 'success');
       },
-      onError: () => {
-        showSnackbar('Note: API is read-only. Changes are simulated.', 'info');
+      onError: (error) => {
+        showSnackbar(`Failed to upload: ${error.message}`, 'error');
         setUploadDialogOpen(false);
       },
     });
@@ -88,12 +88,12 @@ export default function Home() {
     if (itemToDelete.type === 'image') {
       deleteImageMutation.mutate(itemToDelete.item.id, {
         onSuccess: () => showSnackbar('Image deleted successfully', 'success'),
-        onError: () => showSnackbar('Note: API is read-only. Changes are simulated.', 'info'),
+        onError: (error) => showSnackbar(`Failed to delete: ${error.message}`, 'error'),
       });
     } else {
       deleteCategoryMutation.mutate(itemToDelete.item.id, {
         onSuccess: () => showSnackbar('Category deleted successfully', 'success'),
-        onError: () => showSnackbar('Note: API is read-only. Changes are simulated.', 'info'),
+        onError: (error) => showSnackbar(`Failed to delete: ${error.message}`, 'error'),
       });
     }
     setDeleteDialogOpen(false);
@@ -110,8 +110,8 @@ export default function Home() {
             setCategoryDialogOpen(false);
             setEditingCategory(null);
           },
-          onError: () => {
-            showSnackbar('Note: API is read-only. Changes are simulated.', 'info');
+          onError: (error) => {
+            showSnackbar(`Failed to update: ${error.message}`, 'error');
             setCategoryDialogOpen(false);
             setEditingCategory(null);
           },
@@ -123,8 +123,8 @@ export default function Home() {
           showSnackbar('Category created successfully', 'success');
           setCategoryDialogOpen(false);
         },
-        onError: () => {
-          showSnackbar('Note: API is read-only. Changes are simulated.', 'info');
+        onError: (error) => {
+          showSnackbar(`Failed to create: ${error.message}`, 'error');
           setCategoryDialogOpen(false);
         },
       });
