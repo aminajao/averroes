@@ -14,12 +14,14 @@ import useImage from 'use-image';
 
 function ImageLayer({ src, onImageLoad }) {
   const [image] = useImage(src);
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    if (image) {
+    if (image && !hasLoaded.current) {
+      hasLoaded.current = true;
       onImageLoad(image);
     }
-  }, [image, onImageLoad]);
+  }, [image]);
 
   return image ? <KonvaImage image={image} /> : null;
 }
@@ -85,48 +87,94 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
     setRectangles(rectangles.slice(0, -1));
   };
 
-  const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+  const colors = [
+    { hex: '#ef4444', name: 'Red' },
+    { hex: '#10b981', name: 'Green' },
+    { hex: '#3b82f6', name: 'Blue' },
+    { hex: '#f59e0b', name: 'Orange' },
+    { hex: '#8b5cf6', name: 'Purple' },
+    { hex: '#06b6d4', name: 'Cyan' },
+  ];
 
   return (
     <Box>
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6" gutterBottom>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          mb: 3,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          borderRadius: 3,
+        }}
+      >
+        <Typography variant="h6" gutterBottom fontWeight={600}>
           Annotation Tools
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Typography variant="body2">Select Color:</Typography>
-          <ButtonGroup>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mb: 2 }}>
+          <Typography variant="body2" fontWeight={500}>Color Palette:</Typography>
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
             {colors.map((color) => (
-              <Button
-                key={color}
-                onClick={() => setSelectedColor(color)}
+              <Box
+                key={color.hex}
+                onClick={() => setSelectedColor(color.hex)}
                 sx={{
-                  bgcolor: color,
-                  width: 40,
-                  height: 40,
-                  minWidth: 40,
-                  border: selectedColor === color ? '3px solid #000' : '1px solid #ccc',
+                  width: 44,
+                  height: 44,
+                  bgcolor: color.hex,
+                  borderRadius: 2,
+                  cursor: 'pointer',
+                  border: selectedColor === color.hex ? '3px solid white' : '2px solid rgba(255,255,255,0.3)',
+                  boxShadow: selectedColor === color.hex ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
+                  transition: 'all 0.2s',
                   '&:hover': {
-                    bgcolor: color,
-                    opacity: 0.8,
+                    transform: 'scale(1.1)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                   },
                 }}
+                title={color.name}
               />
             ))}
-          </ButtonGroup>
-          <Button variant="outlined" onClick={handleDeleteLast} disabled={rectangles.length === 0}>
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <Button
+            variant="contained"
+            onClick={handleDeleteLast}
+            disabled={rectangles.length === 0}
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.2)',
+              backdropFilter: 'blur(10px)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
+              '&:disabled': { bgcolor: 'rgba(255,255,255,0.1)' }
+            }}
+          >
             Delete Last
           </Button>
-          <Button variant="contained" onClick={handleSave}>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            sx={{
+              bgcolor: 'white',
+              color: '#667eea',
+              fontWeight: 600,
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
+            }}
+          >
             Save Annotations
           </Button>
         </Box>
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-          Click and drag to draw rectangles on the image
-        </Typography>
       </Paper>
 
-      <Paper sx={{ display: 'inline-block', p: 2 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          display: 'inline-block',
+          p: 2,
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        }}
+      >
         <Stage
           width={dimensions.width}
           height={dimensions.height}

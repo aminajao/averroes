@@ -31,9 +31,21 @@ export default function CategoryDialog({ open, onClose, onSave, category }) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{category ? 'Edit Category' : 'Create Category'}</DialogTitle>
-      <DialogContent>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+        },
+      }}
+    >
+      <DialogTitle sx={{ pb: 2, fontSize: '1.5rem', fontWeight: 700 }}>
+        {category ? 'Edit Category' : 'Create New Category'}
+      </DialogTitle>
+      <DialogContent sx={{ pt: 2 }}>
         <TextField
           autoFocus
           margin="dense"
@@ -42,7 +54,7 @@ export default function CategoryDialog({ open, onClose, onSave, category }) {
           variant="outlined"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          sx={{ mb: 2, mt: 1 }}
+          sx={{ mb: 2.5 }}
         />
         <TextField
           margin="dense"
@@ -53,12 +65,21 @@ export default function CategoryDialog({ open, onClose, onSave, category }) {
           rows={3}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          helperText="Optional: Provide a brief description"
         />
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSave} variant="contained" disabled={!name.trim()}>
-          {category ? 'Update' : 'Create'}
+      <DialogActions sx={{ p: 3, pt: 2 }}>
+        <Button onClick={onClose} size="large" sx={{ px: 3 }}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          size="large"
+          disabled={!name.trim()}
+          sx={{ px: 3 }}
+        >
+          {category ? 'Update Category' : 'Create Category'}
         </Button>
       </DialogActions>
     </Dialog>

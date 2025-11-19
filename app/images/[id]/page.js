@@ -104,40 +104,77 @@ export default function ImageDetailPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5', py: 4 }}>
-      <Container maxWidth="xl">
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton onClick={() => router.push('/')}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box>
-            <Typography variant="h4" component="h1" fontWeight="bold">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          pt: 6,
+          pb: 8,
+          mb: -4,
+        }}
+      >
+        <Container maxWidth="xl">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+            <IconButton
+              onClick={() => router.push('/')}
+              sx={{
+                bgcolor: 'rgba(255,255,255,0.2)',
+                color: 'white',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
+              }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography variant="body1" sx={{ color: 'white', opacity: 0.9 }}>
+              Back to Gallery
+            </Typography>
+          </Box>
+          <Box sx={{ color: 'white' }}>
+            <Typography variant="h3" component="h1" fontWeight={800} gutterBottom>
               {image.name}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body1" sx={{ opacity: 0.9 }}>
               Uploaded on {formatDate(image.uploadDate)}
             </Typography>
           </Box>
-        </Box>
+        </Container>
+      </Box>
 
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
+      <Container maxWidth="xl" sx={{ pb: 6 }}>
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            mb: 4,
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.15)',
+          }}
+        >
+          <Typography variant="h5" gutterBottom fontWeight={700} sx={{ mb: 3 }}>
             Image Details
           </Typography>
-          <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             <Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={600}>
                 Category
               </Typography>
-              <Chip label={getCategoryName(image.categoryId)} color="primary" size="small" />
+              <Chip
+                label={getCategoryName(image.categoryId)}
+                size="medium"
+                sx={{
+                  fontWeight: 600,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                }}
+              />
             </Box>
             {image.metadata && Object.keys(image.metadata).length > 0 && (
               <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
+                <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={600}>
                   Metadata
                 </Typography>
                 {Object.entries(image.metadata).map(([key, value]) => (
-                  <Typography key={key} variant="body2">
+                  <Typography key={key} variant="body2" sx={{ mb: 0.5 }}>
                     <strong>{key}:</strong> {value}
                   </Typography>
                 ))}
@@ -146,11 +183,11 @@ export default function ImageDetailPage() {
           </Box>
         </Paper>
 
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
+        <Box>
+          <Typography variant="h5" gutterBottom fontWeight={700} sx={{ mb: 2 }}>
             Image Annotation
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             Draw rectangles on the image to annotate specific regions
           </Typography>
           {annotationsLoading ? (
@@ -162,7 +199,7 @@ export default function ImageDetailPage() {
               onSaveAnnotations={handleSaveAnnotations}
             />
           )}
-        </Paper>
+        </Box>
 
         <Snackbar
           open={snackbar.open}

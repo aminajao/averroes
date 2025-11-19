@@ -47,9 +47,21 @@ export default function ImageUploadDialog({ open, onClose, onUpload }) {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Upload Image</DialogTitle>
-      <DialogContent>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+        },
+      }}
+    >
+      <DialogTitle sx={{ pb: 2, fontSize: '1.5rem', fontWeight: 700 }}>
+        Upload New Image
+      </DialogTitle>
+      <DialogContent sx={{ pt: 2 }}>
         <TextField
           autoFocus
           margin="dense"
@@ -58,7 +70,7 @@ export default function ImageUploadDialog({ open, onClose, onUpload }) {
           variant="outlined"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          sx={{ mb: 2, mt: 1 }}
+          sx={{ mb: 2.5 }}
         />
         <TextField
           margin="dense"
@@ -67,10 +79,10 @@ export default function ImageUploadDialog({ open, onClose, onUpload }) {
           variant="outlined"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          sx={{ mb: 2 }}
+          sx={{ mb: 2.5 }}
           placeholder="https://example.com/image.jpg"
         />
-        <FormControl fullWidth sx={{ mb: 2 }}>
+        <FormControl fullWidth sx={{ mb: 2.5 }}>
           <InputLabel>Category</InputLabel>
           <Select
             value={categoryId}
@@ -94,16 +106,21 @@ export default function ImageUploadDialog({ open, onClose, onUpload }) {
           value={metadata}
           onChange={(e) => setMetadata(e.target.value)}
           placeholder='{"size": "1920x1080", "resolution": "72dpi"}'
+          helperText="Optional: Add custom metadata in JSON format"
         />
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
+      <DialogActions sx={{ p: 3, pt: 2 }}>
+        <Button onClick={handleClose} size="large" sx={{ px: 3 }}>
+          Cancel
+        </Button>
         <Button
           onClick={handleUpload}
           variant="contained"
+          size="large"
           disabled={!name.trim() || !url.trim()}
+          sx={{ px: 3 }}
         >
-          Upload
+          Upload Image
         </Button>
       </DialogActions>
     </Dialog>

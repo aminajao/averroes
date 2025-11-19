@@ -136,44 +136,99 @@ export default function Home() {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5', py: 4 }}>
-      <Container maxWidth="xl">
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom>
-            Image Management System
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Upload, organize, and annotate your images with ease
-          </Typography>
-        </Box>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          pt: 8,
+          pb: 12,
+          mb: -6,
+        }}
+      >
+        <Container maxWidth="xl">
+          <Box sx={{ textAlign: 'center', color: 'white' }}>
+            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 800, mb: 2 }}>
+              Image Management System
+            </Typography>
+            <Typography variant="h6" sx={{ mb: 4, opacity: 0.95, fontWeight: 400 }}>
+              Upload, organize, and annotate your images with professional tools
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
 
-        <Paper sx={{ mb: 3 }}>
-          <Tabs value={activeTab} onChange={(e, val) => setActiveTab(val)}>
-            <Tab icon={<ImageIcon />} label="Images" />
-            <Tab icon={<CategoryIcon />} label="Categories" />
+      <Container maxWidth="xl" sx={{ pb: 6 }}>
+        <Paper
+          elevation={3}
+          sx={{
+            mb: 4,
+            borderRadius: 3,
+            overflow: 'hidden',
+            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.15)',
+          }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={(e, val) => setActiveTab(val)}
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              '& .MuiTab-root': {
+                py: 2.5,
+                fontSize: '1rem',
+                fontWeight: 600,
+              },
+            }}
+          >
+            <Tab icon={<ImageIcon />} label="Images" iconPosition="start" />
+            <Tab icon={<CategoryIcon />} label="Categories" iconPosition="start" />
           </Tabs>
         </Paper>
 
         {activeTab === 0 && (
           <Box>
-            <Paper sx={{ p: 3, mb: 3 }}>
+            <Paper
+              elevation={2}
+              sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+              }}
+            >
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
                 <TextField
-                  placeholder="Search images..."
+                  placeholder="Search images by name or metadata..."
                   variant="outlined"
-                  size="small"
+                  size="medium"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <SearchIcon />
+                        <SearchIcon sx={{ color: 'primary.main' }} />
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ flexGrow: 1, minWidth: 250 }}
+                  sx={{
+                    flexGrow: 1,
+                    minWidth: 280,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      bgcolor: 'white',
+                    },
+                  }}
                 />
-                <FormControl size="small" sx={{ minWidth: 200 }}>
+                <FormControl
+                  size="medium"
+                  sx={{
+                    minWidth: 220,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      bgcolor: 'white',
+                    },
+                  }}
+                >
                   <InputLabel>Filter by Category</InputLabel>
                   <Select
                     value={categoryFilter}
@@ -190,8 +245,13 @@ export default function Home() {
                 </FormControl>
                 <Button
                   variant="contained"
+                  size="large"
                   startIcon={<AddIcon />}
                   onClick={() => setUploadDialogOpen(true)}
+                  sx={{
+                    px: 3,
+                    py: 1.5,
+                  }}
                 >
                   Upload Image
                 </Button>
@@ -212,14 +272,16 @@ export default function Home() {
 
         {activeTab === 1 && (
           <Box>
-            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
+                size="large"
                 startIcon={<AddIcon />}
                 onClick={() => {
                   setEditingCategory(null);
                   setCategoryDialogOpen(true);
                 }}
+                sx={{ px: 3, py: 1.5 }}
               >
                 Create Category
               </Button>
@@ -228,19 +290,43 @@ export default function Home() {
             {categoriesLoading ? (
               <Typography>Loading categories...</Typography>
             ) : (
-              <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 3,
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: 'repeat(2, 1fr)',
+                    md: 'repeat(3, 1fr)',
+                    lg: 'repeat(4, 1fr)',
+                  },
+                }}
+              >
                 {categories?.map((category) => (
-                  <Paper key={category.id} sx={{ p: 3 }}>
-                    <Typography variant="h6" gutterBottom>
+                  <Paper
+                    key={category.id}
+                    elevation={2}
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      transition: 'all 0.3s',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 12px 28px rgba(102, 126, 234, 0.15)',
+                      },
+                    }}
+                  >
+                    <Typography variant="h6" gutterBottom fontWeight={700}>
                       {category.name}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {category.description || 'No description'}
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3, minHeight: 40 }}>
+                      {category.description || 'No description provided'}
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1.5 }}>
                       <Button
-                        size="small"
+                        size="medium"
                         variant="outlined"
+                        fullWidth
                         onClick={() => {
                           setEditingCategory(category);
                           setCategoryDialogOpen(true);
@@ -249,9 +335,10 @@ export default function Home() {
                         Edit
                       </Button>
                       <Button
-                        size="small"
+                        size="medium"
                         variant="outlined"
                         color="error"
+                        fullWidth
                         onClick={() => handleDeleteCategory(category)}
                       >
                         Delete
