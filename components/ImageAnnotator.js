@@ -30,12 +30,12 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
   const [rectangles, setRectangles] = useState(annotations);
   const [newRect, setNewRect] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [selectedColor, setSelectedColor] = useState('#ff0000');
+  const [selectedColor, setSelectedColor] = useState('#ef4444');
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const stageRef = useRef(null);
 
   const handleImageLoad = (image) => {
-    const maxWidth = 800;
+    const maxWidth = window.innerWidth > 1200 ? 1000 : 800;
     const maxHeight = 600;
     const ratio = Math.min(maxWidth / image.width, maxHeight / image.height);
     setDimensions({
@@ -45,10 +45,12 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
   };
 
   const handleMouseDown = (e) => {
-    if (e.target !== e.target.getStage()) return;
+    const clickedOnEmpty = e.target === e.target.getStage() || e.target.getClassName() === 'Image';
+    if (!clickedOnEmpty) return;
 
     setIsDrawing(true);
-    const pos = e.target.getStage().getPointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
     setNewRect({
       x: pos.x,
       y: pos.y,
@@ -61,7 +63,8 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
   const handleMouseMove = (e) => {
     if (!isDrawing) return;
 
-    const pos = e.target.getStage().getPointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
     setNewRect((prev) => ({
       ...prev,
       width: pos.x - prev.x,
@@ -74,7 +77,8 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
 
     setIsDrawing(false);
     if (newRect && Math.abs(newRect.width) > 5 && Math.abs(newRect.height) > 5) {
-      setRectangles([...rectangles, { ...newRect, id: Date.now() }]);
+      const newAnnotation = { ...newRect, id: Date.now() };
+      setRectangles((prev) => [...prev, newAnnotation]);
     }
     setNewRect(null);
   };
@@ -111,9 +115,12 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
         <Typography variant="h6" gutterBottom fontWeight={600}>
           Annotation Tools
         </Typography>
+        <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
+          Click and drag on the image below to draw rectangles. {rectangles.length} annotation{rectangles.length !== 1 ? 's' : ''} created.
+        </Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mb: 2 }}>
           <Typography variant="body2" fontWeight={500}>Color Palette:</Typography>
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
             {colors.map((color) => (
               <Box
                 key={color.hex}
@@ -127,13 +134,27 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
                   border: selectedColor === color.hex ? '3px solid white' : '2px solid rgba(255,255,255,0.3)',
                   boxShadow: selectedColor === color.hex ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
                   transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   '&:hover': {
                     transform: 'scale(1.1)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                   },
                 }}
                 title={color.name}
-              />
+              >
+                {selectedColor === color.hex && (
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      bgcolor: 'white',
+                      borderRadius: '50%',
+                    }}
+                  />
+                )}
+              </Box>
             ))}
           </Box>
         </Box>
@@ -161,7 +182,7 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
               '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
             }}
           >
-            Save Annotations
+            Save Annotations ({rectangles.length})
           </Button>
         </Box>
       </Paper>
@@ -175,14 +196,23 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
           background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
         }}
       >
-        <Stage
-          width={dimensions.width}
-          height={dimensions.height}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          ref={stageRef}
+        <Box
+          sx={{
+            cursor: 'crosshair',
+            border: '2px solid',
+            borderColor: 'primary.main',
+            borderRadius: 1,
+            overflow: 'hidden',
+          }}
         >
+          <Stage
+            width={dimensions.width}
+            height={dimensions.height}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            ref={stageRef}
+          >
           <Layer>
             <ImageLayer src={imageSrc} onImageLoad={handleImageLoad} />
             {rectangles.map((rect) => (
@@ -208,6 +238,7 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
             )}
           </Layer>
         </Stage>
+        </Box>
       </Paper>
     </Box>
   );
