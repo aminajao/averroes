@@ -55,8 +55,11 @@ export default function ImageDetailPage() {
   };
 
   const handleSaveAnnotations = async (newAnnotations) => {
-    const existingIds = annotations.map(a => a.id);
-    const annotationsToSave = newAnnotations.filter(a => !existingIds.includes(a.id));
+    const persistedIds = new Set(annotations.map(a => String(a.id)));
+    const annotationsToSave = newAnnotations.filter(a => {
+      const hasPersistedId = a.id && String(a.id).includes('_');
+      return !hasPersistedId || !persistedIds.has(String(a.id));
+    });
 
     if (annotationsToSave.length === 0) {
       setSnackbar({
