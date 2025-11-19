@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Image Management System
+
+A comprehensive image management application built with Next.js, Material UI, React Query, and React Konva for image annotation.
+
+## Features
+
+- **Image Management**: Upload, view, and delete images with metadata
+- **Category Management**: Create, update, and delete categories for organizing images
+- **Advanced Filtering**: Search images by name and metadata, filter by category
+- **Image Annotation**: Draw rectangles on images with customizable colors using React Konva
+- **Responsive Design**: Fully responsive UI that works on all devices
+- **Real-time Updates**: React Query for efficient data fetching and caching
+
+## Technologies Used
+
+- **Framework**: Next.js 14 (App Router)
+- **UI Library**: Material UI (MUI)
+- **State Management**: React Query (@tanstack/react-query)
+- **Drawing Library**: React Konva (for image annotation)
+- **Styling**: Material UI theming + CSS
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ installed
+- npm or yarn package manager
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd averroes
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+3. Run the development server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Learn More
+### Build for Production
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+npm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+/app
+  /images/[id]   - Image detail and annotation page
+  layout.js      - Root layout with providers
+  page.js        - Home page with image gallery and categories
+  providers.js   - React Query and MUI theme providers
 
-## Deploy on Vercel
+/components
+  CategoryDialog.js       - Create/edit category modal
+  ConfirmDialog.js        - Deletion confirmation dialog
+  ImageAnnotator.js       - Canvas-based annotation tool
+  ImageGallery.js         - Grid display of images
+  ImageUploadDialog.js    - Image upload form
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+/hooks
+  useAnnotations.js  - Annotation data hooks
+  useCategories.js   - Category data hooks
+  useImages.js       - Image data hooks
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+/lib
+  api.js  - API client functions
+```
+
+## API Integration
+
+The application connects to a JSON placeholder API:
+- Base URL: `https://my-json-server.typicode.com/MostafaKMilly/demo`
+- Endpoints: `/categories`, `/images`, `/annotations`
+
+**Note**: The API is read-only. All mutations are simulated and changes won't persist on the server.
+
+## Features Implementation
+
+### Image Management
+- Upload images with name, URL, category, and metadata
+- View images in a responsive grid gallery
+- Delete images with confirmation dialog
+- Click on images to view details and annotate
+
+### Category Management
+- Create new categories with name and description
+- Edit existing categories
+- Delete categories with confirmation
+- View all categories in a dedicated tab
+
+### Filtering & Search
+- Search images by name or metadata content
+- Filter images by category using dropdown
+- Real-time search results
+
+### Image Annotation
+- Draw rectangles on images using mouse drag
+- Choose from 6 predefined colors for annotations
+- Delete last annotation
+- Save annotations (stored locally due to API limitations)
+- View existing annotations when opening images
+
+## Notes
+
+- Since the API is a JSON placeholder and doesn't persist data, annotations are stored in local state
+- The application provides user feedback for all operations
+- Error handling is implemented for API failures
+- Responsive design ensures usability across all device sizes
+
+## Future Enhancements
+
+- Implement real backend with persistent storage
+- Add more annotation tools (circles, polygons, text)
+- Support for batch image uploads
+- Export annotations in various formats
+- User authentication and authorization
