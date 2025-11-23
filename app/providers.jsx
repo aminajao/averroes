@@ -84,6 +84,7 @@ const theme = createTheme({
 });
 
 export default function Providers({ children }) {
+  const [isInitialized, setIsInitialized] = useState(false);
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
@@ -94,8 +95,16 @@ export default function Providers({ children }) {
   }));
 
   useEffect(() => {
-    initializeStorage();
+    const init = async () => {
+      await initializeStorage();
+      setIsInitialized(true);
+    };
+    init();
   }, []);
+
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
