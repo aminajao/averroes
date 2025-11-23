@@ -11,6 +11,7 @@ import {
   TextField,
 } from '@mui/material';
 import useImage from 'use-image';
+import { ANNOTATION_COLORS, GRADIENTS } from '@/lib/constants';
 
 function ImageLayer({ src, onImageLoad }) {
   const [image] = useImage(src);
@@ -95,14 +96,6 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
     setRectangles(rectangles.slice(0, -1));
   };
 
-  const colors = [
-    { hex: '#ef4444', name: 'Red' },
-    { hex: '#10b981', name: 'Green' },
-    { hex: '#3b82f6', name: 'Blue' },
-    { hex: '#f59e0b', name: 'Orange' },
-    { hex: '#8b5cf6', name: 'Purple' },
-    { hex: '#06b6d4', name: 'Cyan' },
-  ];
 
   return (
     <Box>
@@ -111,7 +104,7 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
         sx={{
           p: 3,
           mb: 3,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: GRADIENTS.PRIMARY,
           color: 'white',
           borderRadius: 3,
         }}
@@ -125,7 +118,7 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mb: 2 }}>
           <Typography variant="body2" fontWeight={500}>Color Palette:</Typography>
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-            {colors.map((color) => (
+            {ANNOTATION_COLORS.map((color) => (
               <Box
                 key={color.hex}
                 onClick={() => setSelectedColor(color.hex)}
@@ -197,7 +190,7 @@ export default function ImageAnnotator({ imageSrc, annotations = [], onSaveAnnot
           display: 'inline-block',
           p: 2,
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+          background: GRADIENTS.CANVAS,
         }}
       >
         <Box

@@ -1,181 +1,53 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import {
-  Container,
-  Box,
-  Typography,
-  Button,
-  TextField,
-  InputAdornment,
-  Paper,
-  Tabs,
-  Tab,
-  Alert,
-  Snackbar,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Pagination,
-} from '@mui/material';
-import {
-  Search as SearchIcon,
-  Add as AddIcon,
-  Image as ImageIcon,
-  Category as CategoryIcon,
-} from '@mui/icons-material';
-import { useImages, useDeleteImage, useCreateImage } from '@/hooks/useImages';
-import { useCategories, useDeleteCategory, useCreateCategory, useUpdateCategory } from '@/hooks/useCategories';
-import ImageGallery from '@/components/ImageGallery';
+import { useState } from 'react';
+import { Container, Box, Paper, Tabs, Tab, Alert, Snackbar } from '@mui/material';
+import { Image as ImageIcon, Category as CategoryIcon } from '@mui/icons-material';
+import { useImages } from '@/hooks/useImages';
+import { useCategories } from '@/hooks/useCategories';
+import { useNotifications } from '@/hooks/useNotifications';
+import { useImageManagement } from '@/hooks/useImageManagement';
+import { useCategoryManagement } from '@/hooks/useCategoryManagement';
+import { useDeleteManagement } from '@/hooks/useDeleteManagement';
+import PageHeader from '@/components/PageHeader';
+import ImagesTab from '@/components/ImagesTab';
+import CategoriesTab from '@/components/CategoriesTab';
 import ImageUploadDialog from '@/components/ImageUploadDialog';
 import CategoryDialog from '@/components/CategoryDialog';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { TABS, ITEM_TYPES } from '@/lib/constants';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [page, setPage] = useState(1);
-  const imagesPerPage = 12;
+  const [activeTab, setActiveTab] = useState(TABS.IMAGES);
 
   const { data: images, isLoading: imagesLoading } = useImages();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
-  const deleteImageMutation = useDeleteImage();
-  const createImageMutation = useCreateImage();
-  const deleteCategoryMutation = useDeleteCategory();
-  const createCategoryMutation = useCreateCategory();
-  const updateCategoryMutation = useUpdateCategory();
 
-  const filteredImages = useMemo(() => {
-    if (!images) return [];
+  const { snackbar, showSuccess, showError, hideNotification } = useNotifications();
 
-    return images.filter((image) => {
-      const matchesSearch = image.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (image.metadata && JSON.stringify(image.metadata).toLowerCase().includes(searchQuery.toLowerCase()));
-      const matchesCategory = !categoryFilter || image.categoryId === categoryFilter;
-      return matchesSearch && matchesCategory;
-    });
-  }, [images, searchQuery, categoryFilter]);
+  const imageManagement = useImageManagement(showSuccess, showError);
+  const categoryManagement = useCategoryManagement(showSuccess, showError);
 
-  const paginatedImages = useMemo(() => {
-    const startIndex = (page - 1) * imagesPerPage;
-    const endIndex = startIndex + imagesPerPage;
-    return filteredImages.slice(startIndex, endIndex);
-  }, [filteredImages, page, imagesPerPage]);
-
-  const totalPages = Math.ceil(filteredImages.length / imagesPerPage);
-
-  const handlePageChange = (event, value) => {
-    setPage(value);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const deletionStrategies = {
+    [ITEM_TYPES.IMAGE]: () => imageManagement.confirmDeleteImage(),
+    [ITEM_TYPES.CATEGORY]: () => categoryManagement.confirmDeleteCategory(),
   };
 
-  useEffect(() => {
-    setPage(1);
-  }, [searchQuery, categoryFilter]);
+  const deleteManagement = useDeleteManagement(deletionStrategies);
 
-  const handleUploadImage = (imageData) => {
-    createImageMutation.mutate(imageData, {
-      onSuccess: () => {
-        setUploadDialogOpen(false);
-        showSnackbar('Image uploaded successfully', 'success');
-      },
-      onError: (error) => {
-        showSnackbar(`Failed to upload: ${error.message}`, 'error');
-        setUploadDialogOpen(false);
-      },
-    });
+  const handleImageDelete = (image) => {
+    imageManagement.handleDeleteImage(image);
+    deleteManagement.handleDelete(ITEM_TYPES.IMAGE, image);
   };
 
-  const handleDeleteImage = (image) => {
-    setItemToDelete({ type: 'image', item: image });
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteCategory = (category) => {
-    setItemToDelete({ type: 'category', item: category });
-    setDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (itemToDelete.type === 'image') {
-      deleteImageMutation.mutate(itemToDelete.item.id, {
-        onSuccess: () => showSnackbar('Image deleted successfully', 'success'),
-        onError: (error) => showSnackbar(`Failed to delete: ${error.message}`, 'error'),
-      });
-    } else {
-      deleteCategoryMutation.mutate(itemToDelete.item.id, {
-        onSuccess: () => showSnackbar('Category deleted successfully', 'success'),
-        onError: (error) => showSnackbar(`Failed to delete: ${error.message}`, 'error'),
-      });
-    }
-    setDeleteDialogOpen(false);
-    setItemToDelete(null);
-  };
-
-  const handleSaveCategory = (categoryData) => {
-    if (editingCategory) {
-      updateCategoryMutation.mutate(
-        { id: editingCategory.id, data: categoryData },
-        {
-          onSuccess: () => {
-            showSnackbar('Category updated successfully', 'success');
-            setCategoryDialogOpen(false);
-            setEditingCategory(null);
-          },
-          onError: (error) => {
-            showSnackbar(`Failed to update: ${error.message}`, 'error');
-            setCategoryDialogOpen(false);
-            setEditingCategory(null);
-          },
-        }
-      );
-    } else {
-      createCategoryMutation.mutate(categoryData, {
-        onSuccess: () => {
-          showSnackbar('Category created successfully', 'success');
-          setCategoryDialogOpen(false);
-        },
-        onError: (error) => {
-          showSnackbar(`Failed to create: ${error.message}`, 'error');
-          setCategoryDialogOpen(false);
-        },
-      });
-    }
-  };
-
-  const showSnackbar = (message, severity) => {
-    setSnackbar({ open: true, message, severity });
+  const handleCategoryDelete = (category) => {
+    categoryManagement.handleDeleteCategory(category);
+    deleteManagement.handleDelete(ITEM_TYPES.CATEGORY, category);
   };
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          pt: 8,
-          pb: 12,
-          mb: -6,
-        }}
-      >
-        <Container maxWidth="xl">
-          <Box sx={{ textAlign: 'center', color: 'white' }}>
-            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 800, mb: 2 }}>
-              Image Management System
-            </Typography>
-            <Typography variant="h6" sx={{ mb: 4, opacity: 0.95, fontWeight: 400 }}>
-              Upload, organize, and annotate your images with professional tools
-            </Typography>
-          </Box>
-        </Container>
-      </Box>
+      <PageHeader />
 
       <Container maxWidth="xl" sx={{ pb: 6 }}>
         <Paper
@@ -205,218 +77,51 @@ export default function Home() {
           </Tabs>
         </Paper>
 
-        {activeTab === 0 && (
-          <Box>
-            <Paper
-              elevation={2}
-              sx={{
-                p: 3,
-                mb: 4,
-                borderRadius: 3,
-                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-              }}
-            >
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-                <TextField
-                  placeholder="Search images by name or metadata..."
-                  variant="outlined"
-                  size="medium"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: 'primary.main' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    flexGrow: 1,
-                    minWidth: 280,
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      bgcolor: 'white',
-                    },
-                  }}
-                />
-                <FormControl
-                  size="medium"
-                  sx={{
-                    minWidth: 220,
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      bgcolor: 'white',
-                    },
-                  }}
-                >
-                  <InputLabel>Filter by Category</InputLabel>
-                  <Select
-                    value={categoryFilter}
-                    label="Filter by Category"
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                  >
-                    <MenuItem value="">All Categories</MenuItem>
-                    {categories?.map((cat) => (
-                      <MenuItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <Button
-                  variant="contained"
-                  size="large"
-                  startIcon={<AddIcon />}
-                  onClick={() => setUploadDialogOpen(true)}
-                  sx={{
-                    px: 3,
-                    py: 1.5,
-                  }}
-                >
-                  Upload Image
-                </Button>
-              </Box>
-            </Paper>
-
-            {imagesLoading ? (
-              <Typography>Loading images...</Typography>
-            ) : (
-              <>
-                <ImageGallery
-                  images={paginatedImages}
-                  categories={categories}
-                  onDelete={handleDeleteImage}
-                />
-                {totalPages > 1 && (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                    <Pagination
-                      count={totalPages}
-                      page={page}
-                      onChange={handlePageChange}
-                      color="primary"
-                      size="large"
-                      showFirstButton
-                      showLastButton
-                    />
-                  </Box>
-                )}
-              </>
-            )}
-          </Box>
+        {activeTab === TABS.IMAGES && (
+          <ImagesTab
+            images={images}
+            categories={categories}
+            isLoading={imagesLoading}
+            onDelete={handleImageDelete}
+            onOpenUpload={imageManagement.openUploadDialog}
+          />
         )}
 
-        {activeTab === 1 && (
-          <Box>
-            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<AddIcon />}
-                onClick={() => {
-                  setEditingCategory(null);
-                  setCategoryDialogOpen(true);
-                }}
-                sx={{ px: 3, py: 1.5 }}
-              >
-                Create Category
-              </Button>
-            </Box>
-
-            {categoriesLoading ? (
-              <Typography>Loading categories...</Typography>
-            ) : (
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 3,
-                  gridTemplateColumns: {
-                    xs: '1fr',
-                    sm: 'repeat(2, 1fr)',
-                    md: 'repeat(3, 1fr)',
-                    lg: 'repeat(4, 1fr)',
-                  },
-                }}
-              >
-                {categories?.map((category) => (
-                  <Paper
-                    key={category.id}
-                    elevation={2}
-                    sx={{
-                      p: 3,
-                      borderRadius: 3,
-                      transition: 'all 0.3s',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: '0 12px 28px rgba(102, 126, 234, 0.15)',
-                      },
-                    }}
-                  >
-                    <Typography variant="h6" gutterBottom fontWeight={700}>
-                      {category.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3, minHeight: 40 }}>
-                      {category.description || 'No description provided'}
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1.5 }}>
-                      <Button
-                        size="medium"
-                        variant="outlined"
-                        fullWidth
-                        onClick={() => {
-                          setEditingCategory(category);
-                          setCategoryDialogOpen(true);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="medium"
-                        variant="outlined"
-                        color="error"
-                        fullWidth
-                        onClick={() => handleDeleteCategory(category)}
-                      >
-                        Delete
-                      </Button>
-                    </Box>
-                  </Paper>
-                ))}
-              </Box>
-            )}
-          </Box>
+        {activeTab === TABS.CATEGORIES && (
+          <CategoriesTab
+            categories={categories}
+            isLoading={categoriesLoading}
+            onEdit={categoryManagement.handleEditCategory}
+            onDelete={handleCategoryDelete}
+            onOpenCreate={categoryManagement.openCategoryDialog}
+          />
         )}
 
         <ImageUploadDialog
-          open={uploadDialogOpen}
-          onClose={() => setUploadDialogOpen(false)}
-          onUpload={handleUploadImage}
+          open={imageManagement.uploadDialogOpen}
+          onClose={imageManagement.closeUploadDialog}
+          onUpload={imageManagement.handleUploadImage}
         />
 
         <CategoryDialog
-          open={categoryDialogOpen}
-          onClose={() => {
-            setCategoryDialogOpen(false);
-            setEditingCategory(null);
-          }}
-          onSave={handleSaveCategory}
-          category={editingCategory}
+          open={categoryManagement.categoryDialogOpen}
+          onClose={categoryManagement.closeCategoryDialog}
+          onSave={categoryManagement.handleSaveCategory}
+          category={categoryManagement.editingCategory}
         />
 
         <ConfirmDialog
-          open={deleteDialogOpen}
-          onClose={() => {
-            setDeleteDialogOpen(false);
-            setItemToDelete(null);
-          }}
-          onConfirm={handleConfirmDelete}
-          title={`Delete ${itemToDelete?.type}`}
-          message={`Are you sure you want to delete this ${itemToDelete?.type}? This action cannot be undone.`}
+          open={deleteManagement.deleteDialogOpen}
+          onClose={deleteManagement.closeDeleteDialog}
+          onConfirm={deleteManagement.confirmDelete}
+          title={`Delete ${deleteManagement.itemToDelete?.type}`}
+          message={`Are you sure you want to delete this ${deleteManagement.itemToDelete?.type}? This action cannot be undone.`}
         />
 
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          onClose={hideNotification}
         >
           <Alert severity={snackbar.severity} sx={{ width: '100%' }}>
             {snackbar.message}
