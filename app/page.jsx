@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Container,
   Box,
@@ -17,6 +17,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Pagination,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -41,6 +42,8 @@ export default function Home() {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [page, setPage] = useState(1);
+  const imagesPerPage = 12;
 
   const { data: images, isLoading: imagesLoading } = useImages();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
@@ -60,6 +63,23 @@ export default function Home() {
       return matchesSearch && matchesCategory;
     });
   }, [images, searchQuery, categoryFilter]);
+
+  const paginatedImages = useMemo(() => {
+    const startIndex = (page - 1) * imagesPerPage;
+    const endIndex = startIndex + imagesPerPage;
+    return filteredImages.slice(startIndex, endIndex);
+  }, [filteredImages, page, imagesPerPage]);
+
+  const totalPages = Math.ceil(filteredImages.length / imagesPerPage);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, categoryFilter]);
 
   const handleUploadImage = (imageData) => {
     createImageMutation.mutate(imageData, {
@@ -261,11 +281,26 @@ export default function Home() {
             {imagesLoading ? (
               <Typography>Loading images...</Typography>
             ) : (
-              <ImageGallery
-                images={filteredImages}
-                categories={categories}
-                onDelete={handleDeleteImage}
-              />
+              <>
+                <ImageGallery
+                  images={paginatedImages}
+                  categories={categories}
+                  onDelete={handleDeleteImage}
+                />
+                {totalPages > 1 && (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                    <Pagination
+                      count={totalPages}
+                      page={page}
+                      onChange={handlePageChange}
+                      color="primary"
+                      size="large"
+                      showFirstButton
+                      showLastButton
+                    />
+                  </Box>
+                )}
+              </>
             )}
           </Box>
         )}
