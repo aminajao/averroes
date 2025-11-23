@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { paginateArray, calculateTotalPages, scrollToTop } from '@/lib/utils';
 
 export function usePagination(items, itemsPerPage) {
@@ -12,14 +12,14 @@ export function usePagination(items, itemsPerPage) {
     return calculateTotalPages(items.length, itemsPerPage);
   }, [items.length, itemsPerPage]);
 
-  const handlePageChange = (event, value) => {
+  const handlePageChange = useCallback((event, value) => {
     setPage(value);
     scrollToTop();
-  };
+  }, []);
 
-  const resetPage = () => {
+  const resetPage = useCallback(() => {
     setPage(1);
-  };
+  }, []);
 
   return {
     page,
